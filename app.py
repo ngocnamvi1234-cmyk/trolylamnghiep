@@ -1,11 +1,9 @@
-response = client.models.generate_content(
-    model='gemini-2.5-flash',
-    contents=f"Bạn là trợ lý nghiệp vụ lâm nghiệp chuyên trách. Hãy trả lời câu hỏi: {active_prompt}"
-)
-reply = response.text
-client = genai.Client(api_key="AIzaSyAPsuCXtq4OiVVEplRDcjOCqd134Mg5gd4")
-from google import genaiimport streamlit as st
+import streamlit as st
 import time
+from google import genai
+
+# Khởi tạo Gemini Client
+client = genai.Client(api_key="AIzaSyAPsuCXtq4OiVVEplRDcjOCqd134Mg5gd4")
 
 # Cấu hình trang mở rộng
 st.set_page_config(
@@ -138,7 +136,7 @@ Căn cứ quy định hiện hành về quản lý và theo dõi diễn biến r
         )
         btn_c2.button("📋 Sao chép văn bản", use_container_width=True)
 
-# ----------------- THANH NHẬP CHAT (ĐẶT Ở NGOÀI CÙNG DƯỚI ĐÁY) -----------------
+# ----------------- THANH NHẬP CHAT VÀ GỌI GEMINI AI -----------------
 user_prompt = st.chat_input("Nhập câu hỏi pháp lý hoặc yêu cầu nghiệp vụ...")
 active_prompt = user_prompt or quick_text
 
@@ -150,9 +148,16 @@ if active_prompt:
         
         with st.chat_message("assistant"):
             response_placeholder = st.empty()
-            with st.spinner("Đang tra cứu cơ sở dữ liệu..."):
-                time.sleep(1)
-                reply = f"Đã nhận yêu cầu: **{active_prompt}**. Đang rà soát và đối chiếu hệ thống dữ liệu quy chuẩn..."
+            with st.spinner("Đang tra cứu cơ sở dữ liệu pháp luật và phân tích..."):
+                try:
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=f"Bạn là trợ lý nghiệp vụ lâm nghiệp chuyên trách. Hãy giải đáp chính xác, đúng căn cứ pháp luật cho câu hỏi: {active_prompt}"
+                    )
+                    reply = response.text
+                except Exception as e:
+                    reply = f"Lỗi phản hồi: {e}"
+                
                 response_placeholder.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
     st.rerun()
