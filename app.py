@@ -1,4 +1,10 @@
-import streamlit as st
+response = client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents=f"Bạn là trợ lý nghiệp vụ lâm nghiệp chuyên trách. Hãy trả lời câu hỏi: {active_prompt}"
+)
+reply = response.text
+client = genai.Client(api_key="AIzaSyAPsuCXtq4OiVVEplRDcjOCqd134Mg5gd4")
+from google import genaiimport streamlit as st
 import time
 
 # Cấu hình trang mở rộng
