@@ -9,7 +9,16 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Tùy biến CSS tăng tính trực quan, giao diện phẳng chuyên nghiệp
+# Khởi tạo bộ nhớ hội thoại
+if "messages" not in st.session_state:
+    st.session_state.messages = [
+        {
+            "role": "assistant",
+            "content": "Xin chào đồng chí! Tôi có thể hỗ trợ tra cứu văn bản pháp luật, đối chiếu số liệu hiện trường hoặc soạn thảo văn bản tham mưu. Vui lòng nhập nội dung cần giải quyết."
+        }
+    ]
+
+# Tùy biến CSS
 st.markdown("""
 <style>
     .main { background-color: #f8fafc; }
@@ -57,30 +66,26 @@ with st.sidebar:
 # ----------------- GIAO DIỆN CHÍNH (CHIA ĐÔI MÀN HÌNH) -----------------
 col_chat, col_inspect = st.columns([6, 4], gap="medium")
 
-# CỘT TRÁI: HỎI ĐÁP & CHAT TRỢ LÝ
+# CỘT TRÁI: HỎI ĐÁP & LỊCH SỬ CHAT
 with col_chat:
     st.subheader("💬 Trợ lý Nghiệp vụ Trực tuyến")
     
-    # Gợi ý tác vụ nhanh (Quick Action Chips)
+    # Gợi ý tác vụ nhanh
     c1, c2, c3 = st.columns(3)
+    quick_text = None
     if c1.button("📋 Quy định diễn biến rừng", use_container_width=True):
-        st.session_state.prefill = "Quy định mới nhất về theo dõi diễn biến rừng gồm những điểm gì?"
+        quick_text = "Quy định mới nhất về theo dõi diễn biến rừng gồm những điểm gì?"
     if c2.button("⚖️ Định khung xử phạt phá rừng", use_container_width=True):
-        st.session_state.prefill = "Hành vi phá rừng tự nhiên trái phép bị định khung xử phạt thế nào?"
+        quick_text = "Hành vi phá rừng tự nhiên trái phép bị định khung xử phạt thế nào?"
     if c3.button("📝 Mẫu biên bản kiểm tra", use_container_width=True):
-        st.session_state.prefill = "Soạn mẫu biên bản kiểm tra hiện trường khai thác lâm sản"
+        quick_text = "Soạn mẫu biên bản kiểm tra hiện trường khai thác lâm sản"
 
-    # Hộp hiển thị lịch sử trao đổi
+    # Hiển thị hội thoại
     chat_container = st.container(height=520)
     with chat_container:
-        with st.chat_message("assistant"):
-            st.markdown(
-                "Xin chào đồng chí! Tôi có thể hỗ trợ tra cứu văn bản pháp luật, "
-                "đối chiếu số liệu hiện trường hoặc soạn thảo văn bản tham mưu. Vui lòng nhập nội dung cần giải quyết."
-            )
-
-    # Khung nhập câu hỏi và file đính kèm trực tiếp
-    user_prompt = st.chat_input("Nhập câu hỏi pháp lý hoặc yêu cầu nghiệp vụ...")
+        for msg in st.session_state.messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(msg["content"])
 
 # CỘT PHẢI: TRÍCH XUẤT NGUỒN & BIÊN TẬP VĂN BẢN
 with col_inspect:
@@ -126,3 +131,22 @@ Căn cứ quy định hiện hành về quản lý và theo dõi diễn biến r
             use_container_width=True
         )
         btn_c2.button("📋 Sao chép văn bản", use_container_width=True)
+
+# ----------------- THANH NHẬP CHAT (ĐẶT Ở NGOÀI CÙNG DƯỚI ĐÁY) -----------------
+user_prompt = st.chat_input("Nhập câu hỏi pháp lý hoặc yêu cầu nghiệp vụ...")
+active_prompt = user_prompt or quick_text
+
+if active_prompt:
+    st.session_state.messages.append({"role": "user", "content": active_prompt})
+    with chat_container:
+        with st.chat_message("user"):
+            st.markdown(active_prompt)
+        
+        with st.chat_message("assistant"):
+            response_placeholder = st.empty()
+            with st.spinner("Đang tra cứu cơ sở dữ liệu..."):
+                time.sleep(1)
+                reply = f"Đã nhận yêu cầu: **{active_prompt}**. Đang rà soát và đối chiếu hệ thống dữ liệu quy chuẩn..."
+                response_placeholder.markdown(reply)
+                st.session_state.messages.append({"role": "assistant", "content": reply})
+    st.rerun()
