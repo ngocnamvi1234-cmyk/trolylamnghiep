@@ -151,7 +151,7 @@ if active_prompt:
             with st.spinner("Đang tra cứu cơ sở dữ liệu pháp luật và phân tích..."):
                 try:
                     response = client.models.generate_content(
-                        model="gemini-2.5-flash",  # hoặc dùng 'gemini-1.5-flash' nếu tài khoản yêu cầu bản stable,
+                        model="gemini-3.6-flash",  # hoặc dùng 'gemini-1.5-flash' nếu tài khoản yêu cầu bản stable,
                         contents=f"Bạn là trợ lý nghiệp vụ lâm nghiệp chuyên trách. Hãy giải đáp chính xác, đúng căn cứ pháp luật cho câu hỏi: {active_prompt}"
                     )
                     reply = response.text
